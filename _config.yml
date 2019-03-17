@@ -1,12 +1,15 @@
 # Setup
-name:         Project or Site name (Architect Theme)
+name:         JimQing's Blog
 tagline:      A responsive theme for your project on GitHub Pages
 baseurl:      ""
-locale:       "en"
+locale:       "en/cn"
+email:        jimqing@yeah.net
 
 # Gems
 gems:
   - jekyll-paginate
 
-#Others
+# Others
 markdown: kramdown
+
+# See change before re-build

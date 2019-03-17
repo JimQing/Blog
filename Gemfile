@@ -1,5 +1,5 @@
 # A sample Gemfile
-source "https://rubygems.org"
+source "http://gems.ruby-china.com/"
 gemspec
 
 gem 'jekyll'
