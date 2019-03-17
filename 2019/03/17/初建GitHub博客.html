@@ -5,10 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="https://jimqing.github.io/Blog/stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="https://jimqing.github.io/Blog/stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="https://jimqing.github.io/Blog/stylesheets/print.css" media="print" />
-    <link rel="shortcut icon" href="https://jimqing.github.io/Blog/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
 
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -63,11 +63,11 @@
 
 <p>进入你新建的博客中，选中菜单中的 Settings</p>
 
-<p><img src="/https://jimqing.github.io/images%5C2019-03-17-settings.jpg" alt="" /></p>
+<p><img src="http://localhost:4000/images%5C2019-03-17-settings.jpg" alt="" /></p>
 
 <p>接着下滑找到我们的GitHub Page，使其作为页面展示，选中master分支就好</p>
 
-<p><img src="/https://jimqing.github.io/images%5C2019-03-17-page.jpg" alt="" /></p>
+<p><img src="http://localhost:4000/images%5C2019-03-17-page.jpg" alt="" /></p>
 
 <p>接着访问图中对应的链接 https://[用户名].github.io/[仓库名]]/</p>
 
@@ -101,7 +101,7 @@
 
 <p>接着我们去 <a href="http://jekyllthemes.org/">jekyllthemes</a> 选一个喜欢的主题</p>
 
-<p>并下载解压到你的 [repository] 目录下，通过 gem 安装 bundle</p>
+<p>并下载解压，通过 gem 安装 bundle</p>
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">gem</span> <span class="n">install</span> <span class="n">bundle</span>
 <span class="c1">#安装 bundle</span>
@@ -115,11 +115,16 @@
 
 <p>运行成功即可在 http://127.0.0.1:4000/ 查看效果</p>
 
+<p>编写完成后，通过 jekyll 打包</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">build</span>
+<span class="c1">#打包完成！</span></code></pre></figure>
+
+<p>打包后，会生成对应的文件在 _site下，将_site的内容复制到到你的 [repository] 目录下，push ! 完成后即可在 https://[用户名].github.io/[仓库名]]/ 下查看你的博客。</p>
+
 <p>Tips:</p>
 
-<ol>
-  <li>在更换源之后如果依旧下载异常，检查下载主题目录下是否有 Gemfile 文件，更换其中的source 即可</li>
-</ol>
+<p>在更换源之后如果依旧下载异常，检查下载主题目录下是否有 Gemfile 文件，更换其中的source 即可</p>
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># A sample Gemfile</span>
 <span class="n">source</span> <span class="s2">"http://gems.ruby-china.com/"</span>
@@ -130,9 +135,7 @@
 <span class="n">gem</span> <span class="s1">'kramdown'</span>
 <span class="n">gem</span> <span class="s1">'pygments.rb'</span></code></pre></figure>
 
-<ol>
-  <li>在执行 install 的时候需要检查你的主题的文件 jekyll-[主题名]-theme.gemspec 对应的版本是否与你的安装版本相同，否则会 install 报错</li>
-</ol>
+<p>在执行 install 的时候需要检查你的主题的文件 jekyll-[主题名]-theme.gemspec 对应的版本是否与你的安装版本相同，否则会 install 报错</p>
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">spec</span><span class="p">.</span><span class="nf">add_development_dependency</span> <span class="s2">"jekyll"</span><span class="p">,</span> <span class="s2">"~&gt; 3.2"</span>
 <span class="n">spec</span><span class="p">.</span><span class="nf">add_development_dependency</span> <span class="s2">"bundler"</span><span class="p">,</span> <span class="s2">"2.0.1"</span>
@@ -140,11 +143,12 @@
 
 
 
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
 
         </section>
 
         <aside id="sidebar">
-          <img style="width: 330px;height: 276px;margin-bottom: 50px;" src="https://jimqing.github.io/Blog/images/octojekyll.png" alt="" srcset="">
+          <img style="width: 330px;height: 276px;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
           
           <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
           
