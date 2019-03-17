@@ -34,8 +34,9 @@
           <h2>初建GitHub博客</h2>
 <p class="meta">17 Mar 2019</p>
 
-<p>初建 github 博客，算是一段比较复杂的过程。
-以下我来回顾一下我的过程</p>
+<p>初建 github 博客，并使用 <a href="http://Jekyllrb.com">jekyll</a> 美化，算是一段比较复杂的过程。</p>
+
+<p>以下我来回顾一下我的过程</p>
 
 <p>第一部分: Github Pages</p>
 
@@ -108,19 +109,42 @@
 <span class="n">bundle</span> <span class="o">-</span><span class="n">v</span>
 <span class="c1">#对应版本号</span>
 <span class="n">bundle</span> <span class="n">install</span>
-<span class="c1">#安装依赖</span>
-<span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">serve</span> <span class="o">-</span><span class="n">w</span>
+<span class="c1">#安装依赖</span></code></pre></figure>
+
+<p>运行之前，打开 _config.yml 进行简单的配置，其中很重要的一点是 baseurl 需改成”/[repository]” 否则上传到线上之后会出现样式丢失！</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># Setup</span>
+<span class="ss">name:         </span><span class="no">Blog</span>
+<span class="ss">tagline:      </span><span class="no">A</span> <span class="n">responsive</span> <span class="n">theme</span> <span class="k">for</span> <span class="n">your</span> <span class="n">project</span> <span class="n">on</span> <span class="no">GitHub</span> <span class="no">Pages</span>
+<span class="ss">baseurl:      </span><span class="s2">"/Blog"</span>
+<span class="ss">locale:       </span><span class="s2">"en"</span>
+<span class="ss">email:        </span><span class="n">jimqing</span><span class="vi">@yeah</span><span class="p">.</span><span class="nf">net</span>
+
+<span class="c1"># Gems</span>
+<span class="ss">gems:
+  </span><span class="o">-</span> <span class="n">jekyll</span><span class="o">-</span><span class="n">paginate</span>
+
+<span class="c1"># Others</span>
+<span class="ss">markdown: </span><span class="n">kramdown</span>
+
+<span class="c1"># See change before re-build</span></code></pre></figure>
+
+<p>准备好了一切之后，运行！</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">serve</span> <span class="o">-</span><span class="n">w</span>
 <span class="c1">#运行!!</span>
 <span class="c1">#-w 表示实时检查改动，可以边书写博客一边查看效果</span></code></pre></figure>
 
-<p>运行成功即可在 http://127.0.0.1:4000/ 查看效果</p>
+<p>运行成功，可在 http://127.0.0.1:4000/ 查看效果</p>
 
 <p>编写完成后，通过 jekyll 打包</p>
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">build</span>
 <span class="c1">#打包完成！</span></code></pre></figure>
 
-<p>打包后，会生成对应的文件在 _site下，将_site的内容复制到到你的 [repository] 目录下，push ! 完成后即可在 https://[用户名].github.io/[仓库名]]/ 下查看你的博客。</p>
+<p>打包后，会生成对应的文件在 _site下，将_site的内容复制到到你的 [repository] 目录下，push !</p>
+
+<p>完成后即可在 https://[用户名].github.io/[仓库名]]/ 下查看你的博客。</p>
 
 <p>Tips:</p>
 
