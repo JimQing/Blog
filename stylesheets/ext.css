@@ -31,3 +31,23 @@ header h1 {
 #main-content{
     width: 75%;
 }
+@media only screen and (max-width: 767px) {
+    .inner {
+        width: 93%;
+    }
+    p {
+        padding-left: 5px;
+    }
+    ol {
+        list-style: none;
+    }
+    ol li p:first-of-type{
+        font-weight: bold;
+    }
+    header h1 {
+        font-size: 55px;
+    }
+    ul {
+        padding-left: 0;
+    }
+}

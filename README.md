@@ -40,7 +40,6 @@ $ bundle exec jekyll build
 ```
 
 About git
-
 ```
 cd _site
 git status
