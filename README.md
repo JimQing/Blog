@@ -1,12 +1,16 @@
-# JimQing's Blog
+#JimQing's Blog
 
-## Architect theme
+### 文章目录
+1.  阿里云服务器Nginx配置ssl证书
+2.  阿里云服务器裸机搭建ftp服务
+3.  Ubuntu安装mysql过程及Navicat链接
+4.  阿里云服务器配置java环境
+5.  初建GitHub博客
+6.  Koa2.0 框架入门
+7.  关于跨域问题详解
 
-## Getting Started
-To install this theme, jekyll is required to be installed on your system. Head over to the [docs](https://jekyllrb.com/docs/installation/) and install the four requirements (Ruby, RubyGems, Node.js and Python 2.7). If you're on a Mac system, it's likely the only package you'll need to install is Node.js
 
-Once you've installed the requirements, run this command in your terminal:
-
+### How To Run Project
 ```
 $ sudo gem install jekyll
 ```
@@ -34,3 +38,12 @@ Use for production!
 ```
 $ bundle exec jekyll build
 ```
+
+About git
+
+```
+cd _site
+git status
+git commit -am 'xxx'
+git push
+``` 
