@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> 关于koa-router的使用 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>关于koa-router的使用</h2>
+<p class="meta">20 Sep 2019</p>
+
+<h3 id="koa-router">koa-router</h3>
+
+<p>Router middleware for koa</p>
+
+<p>Koa的路由，在服务端的路由，通过他可以对前端发出的请求做出响应，并执行对应的方法。</p>
+
+<p>其实更像是服务端的接口，针对该路径的请求返回请求所需的数据。</p>
+
+<h4 id="安装">安装</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm install koa-router
+</code></pre></div></div>
+
+<p>如果要载入配置好的route进入工程中，需在入口处进行’‘注册’‘。</p>
+
+<h4 id="demo举例">demo举例</h4>
+
+<p>在入口文件进行注册</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// app.js
+const router = require('./router.js');
+...
+app
+    .use(router.routes())
+    .use(router.allowedMethods());
+...
+
+// 监听当前机器的 3000 端口
+app.listen(3000);
+</code></pre></div></div>
+
+<p>新建一个router.js，用于处理router的相关处理</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// router.js
+const router = require('koa-router')();
+
+// router get方法
+router.get('/', (ctx, next) =&gt; {
+    ctx.body = 'get request from /!';
+    console.log('get request from /!');
+});
+
+router.get('/test', (ctx, next) =&gt; {
+    ctx.body = 'get request from /test!';
+    console.log('get request from /test!');
+    // 通过next走下一个函数
+    next();
+}, ctx =&gt; {
+    ctx.body += '。。。 /test2!';
+});
+
+// router post方法
+router.post('/post', ctx=&gt; {
+    ctx.body = 'get request from /post!';
+});
+</code></pre></div></div>
+<p>同样router也可以使用链式写法，因为router的get方法与post方法同样会返回router本身。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 链式写法
+router
+    .get('/', (ctx, next) =&gt; {
+        ctx.body = 'get request from /!';
+        console.log('get request from /!');
+    })
+    .get('/test', (ctx, next) =&gt; {
+        ctx.body = 'get request from /test!';
+        console.log('get request from /test!');
+        // 通过next走下一个函数
+        next();
+    }, ctx =&gt; {
+        ctx.body += '。。。 /test2!';
+    })
+    .post('/post', ctx=&gt; {
+        ctx.body = 'get request from /post!';
+    });
+</code></pre></div></div>
+<p>最后，将这个已经预设好的router对象暴露出来。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module.exports = router; // 暴露router对象
+</code></pre></div></div>
+
+<h4 id="扩展-设置请求头及允许前端跨域请求">扩展 (设置请求头及允许前端跨域请求)</h4>
+
+<p>前端开发阶段需要调后端接口，事实上是跨域的，通过一些跨域工具可以实现跨域。</p>
+
+<p>一般情况下，后端支持跨域的方式即是为前端配置 Access-Control-Allow-Origin , 可配置为 ‘*’ 允许所有跨域。</p>
+
+<p>事实上, 设置为 * 是非常不保险的，真实开发环境是后端开启跨域，前端通过跨域请求访问，而在正式环境是没有跨域问题的。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Access-Control-Allow-Origin 源
+Content-Type： application/json;charset=utf-8 默认为json方式, 可能为 formData 模式
+Access-Control-Allow-Methods: 支持的请求方式, 如 ‘GET, POST, PUT, OPTIONS’
+Access-Control-Allow-Headers： content-type 头
+Access-Control-Allow-Credentials: true 支持带cookie跨域
+</code></pre></div></div>
+
+<h4 id="tips-这个要单独讲一下-如果前端需要在跨域请求时带上cookies在头部-需要满足以下条件">Tips: 这个要单独讲一下, 如果前端需要在跨域请求时带上cookies在头部, 需要满足以下条件：</h4>
+
+<ol>
+  <li>Access-Control-Allow-Origin 不为 ‘*’</li>
+  <li>Access-Control-Allow-Credentials  为 ‘true’</li>
+  <li>以axios为例 需要设置 withCredentials: true . ajax及其他类似</li>
+</ol>
+
+<h4 id="举例如下">举例如下</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>router
+    .all('/*', async (ctx, next)=&gt; {
+        ctx.set("Access-Control-Allow-Origin", "http://172.22.22.222:8089");
+        ctx.set("Content-Type", "application/json;charset=utf-8");
+        ctx.set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
+        ctx.set("Access-Control-Allow-Headers", "content-type");
+        ctx.set("Access-Control-Allow-Credentials", "true");
+        console.log(ctx.request.method);
+        if (ctx.request.method === 'OPTIONS') {
+            ctx.status = 200;
+        } else {
+            await next();
+        }
+    })
+    .get('/', (ctx, next) =&gt; {
+        ctx.body = {data: 'get request from /!'};
+        console.log('get request from /!');
+    });
+</code></pre></div></div>
+<p>如上述代码所示，在上述所设置的请求下，我们的Koa服务，同意http://172.22.22.222:8089可以跨域，如果遇到options请求直接放行就是了。</p>
+
+<p>这里补充一下：options请求是浏览器判断你的请求为复杂请求，从而发出的一个校验型请求。复杂请求常见为参数为json的POST请求且contentType为applicaiton/json。</p>
+
+<p>在我的跨域详解里边讲解了一些关于复杂请求与简单请求的内容和例子，<a href="https://jimqing.github.io/Blog/2019/08/09/Cross-domain.html">传送门</a></p>
+
+<h4 id="routerjs-代码段">router.js 代码段</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// router.js
+const router = require('koa-router')();
+
+// router get方法
+router.get('/', (ctx, next) =&gt; {
+    ctx.body = 'get request from /!';
+    console.log('get request from /!');
+});
+
+router.get('/test', (ctx, next) =&gt; {
+    ctx.body = 'get request from /test!';
+    console.log('get request from /test!');
+    // 通过next走下一个函数
+    next();
+}, ctx =&gt; {
+    ctx.body += '。。。 /test2!';
+});
+
+// router post方法
+router.post('/post', ctx=&gt; {
+    ctx.body = 'get request from /post!';
+});
+
+// 链式写法
+router
+    .get('/', (ctx, next) =&gt; {
+        ctx.body = 'get request from /!';
+        console.log('get request from /!');
+    })
+    .get('/test', (ctx, next) =&gt; {
+        ctx.body = 'get request from /test!';
+        console.log('get request from /test!');
+        // 通过next走下一个函数
+        next();
+    }, ctx =&gt; {
+        ctx.body += '。。。 /test2!';
+    })
+    .post('/post', ctx=&gt; {
+        ctx.body = 'get request from /post!';
+    });
+    
+module.exports = router; // 暴露router对象
+</code></pre></div></div>
+<h3 id="参考文献博客">参考文献/博客</h3>
+<ol>
+  <li>koa-router <a href="https://github.com/ZijianHe/koa-router">https://github.com/ZijianHe/koa-router</a></li>
+</ol>
+
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -185,8 +185,16 @@ Ajax请求（非同源）
      }
  );
 </code></pre></div>    </div>
-    <p><img src="/Blog/images\2019-09-08-options.jpg" alt="" />
- 通过CORS进行跨域是一个极好的解决方案，在服务端开启跨域之后，客户端可以不做任何处理，浏览器会自行进行处理，对于请求方是无感知的（options请求）。</p>
+    <p><img src="/Blog/images\2019-09-08-options.jpg" alt="" /></p>
+
+    <p>而OPTIONS请求一般会带三个关键请求头：</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Access-Control-Allow-Headers
+ Access-Control-Allow-Methods
+ Access-Control-Allow-Origin
+</code></pre></div>    </div>
+    <p>当校验成功的时候，就会发送真正的请求了。</p>
+
+    <p>通过CORS进行跨域是一个极好的解决方案，在服务端开启跨域之后，客户端可以不做任何处理，浏览器会自行进行处理，对于请求方是无感知的（options请求）。</p>
 
     <p>Tips: 正常情况下，服务端开启跨域支持后，如果你的的浏览器依旧显示不能跨域，可尝试使用浏览器端的CORS插件再进行尝试。</p>
   </li>
