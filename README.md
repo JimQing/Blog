@@ -1,4 +1,6 @@
-#JimQing's Blog
+# JimQing's Blog
+
+地址：[https://jimqing.github.io/Blog/][1]
 
 ### 文章目录
 1.  阿里云服务器Nginx配置ssl证书
@@ -46,3 +48,5 @@ git status
 git commit -am 'xxx'
 git push
 ``` 
+
+[1]: https://jimqing.github.io/Blog/
