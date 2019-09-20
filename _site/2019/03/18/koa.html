@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> Koa2.0 框架入门 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>Koa2.0 框架入门</h2>
+<p class="meta">18 Mar 2019</p>
+
+<p>Koa2.0框架是一个基于nodeJs的一个后端框架。当下很多流行的企业级框架都以Koa为核心。</p>
+
+<p>看一个官网的简介。 <a href="https://koa.bootcss.com/">如何安装Koa?</a>
+<img src="/Blog/images\2019-03-18-koa.jpg" alt="" /></p>
+
+<p>举个简单的例子，用 Koa 运行一个服务器只要三行代码。</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">const koa = require("koa");
+const app = new koa();
+app.listen(3000);</code></pre></figure>
+
+<p>Koa的框架最大的好处不在多简单的开启服务，而在于封装了httpServer request response对象。</p>
+
+<p>简单来说：</p>
+
+<p>客户端从发请求到看到内容，服务器工作状态如下：</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">接收到请求（request） -&gt; 处理请求,生成数据 -&gt; 发送数据（response）</code></pre></figure>
+
+<p>Koa:</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">request -&gt; middleware -&gt; response
+
+1.处理请求并包装为对象
+2.通过use方法注册中间件进行数据处理
+3.包装输出</code></pre></figure>
+
+<p>Koa 在这个过程中处理了request和response,我们需要做的是注册(编写)中间件（middleware）</p>
+
+<p>对于注册和编写中间件（middleware）Koa 提供了好用的API</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">- Application
+-- context
+-- request
+-- response</code></pre></figure>
+
+<p>此处的Application 指的就是上面代码中的 app 
+而下面的context对象，则是常用的Koa中的上下文对象 简写为 ctx</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">context对象
+- .req: Node 的 request 对象
+- .res: Node 的 response 对象
+- .request: `Koa 中的 request 对象`
+- .response: `Koa 的 response 对象`
+- .state: `用户数据存储空间`
+- .app: `当前应用程序实例 -Application 对象`
+- .redirect `重定向`
+- .cookies `对象`
+    -- .set(name, [options])
+    -- .get(name, ,value, [options])
+    -- options
+    -- .maxAge
+- .signed
+    -- .expires
+- .path
+    -- .domain
+- .secure
+    -- .httpOnly
+- .overwrite
+    -- .throw(code, message, obeject)</code></pre></figure>
+
+<p>可以看到 koa 所提供的 Api 包含了一些 nodeJs 的基础 api，但是 koa 依旧建议尽量使用 koa 的封装对象</p>
+
+<p>对于程序错误，koa 服务若是报错默认返回 500，需要自行对错误进行处理</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">错误处理及捕获
+-app.on('error', err =&gt; {})</code></pre></figure>
+
+<p>关于中间件，其实中间件是一个函数，传入了context对象，通过next走向下一个函数，从而保证每次处理独立解耦</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">middleware
+-- use(callback)
+-- callback(context, next)
+-- context对象(可扩展)
+每一次请求都会包装一个context对象
+-next
+每一个中间件都是一个迭代器，通过next方法执行到下一个中间件</code></pre></figure>
+
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>

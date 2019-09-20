@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> 初建GitHub博客 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>初建GitHub博客</h2>
+<p class="meta">17 Mar 2019</p>
+
+<p>初建 github 博客，并使用 <a href="http://Jekyllrb.com">jekyll</a> 美化，算是一段比较复杂的过程。</p>
+
+<p>以下我来回顾一下我的过程</p>
+
+<p>第一部分: Github Pages</p>
+
+<p>首先你需要有个 [repository] 命名为 [你的博客名]</p>
+
+<p>并在此上传一个 html 文件到你的仓库 ( master 分支)</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">#index.html
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+    &lt;style type="text/css"&gt;
+        h1{
+            text-align: center;
+            font-size: 50px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello Github&lt;/h1&gt;   
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></figure>
+
+<p>进入你新建的博客中，选中菜单中的 Settings</p>
+
+<p><img src="/Blog/images\2019-03-17-settings.jpg" alt="" /></p>
+
+<p>接着下滑找到我们的GitHub Page，使其作为页面展示，选中master分支就好</p>
+
+<p><img src="/Blog/images\2019-03-17-page.jpg" alt="" /></p>
+
+<p>接着访问图中对应的链接 https://[用户名].github.io/[仓库名]]/</p>
+
+<p>即可看到效果。</p>
+
+<p>第二部分 安装 Jekyll</p>
+
+<p>想要安装 Jekyll 需要安装 <a href="https://www.python.org/">Python</a> <a href="http://www.ruby-lang.org/en/documentation/installation/">Ruby</a> 以及 <a href="http://nodejs.cn/">nodeJs</a>.</p>
+
+<p>安装完上述环境并置入环境变量后，检查 ruby</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">ruby</span> <span class="o">-</span><span class="n">v</span>
+<span class="c1"># 对应版本号</span>
+<span class="n">gem</span> <span class="o">-</span><span class="n">v</span>
+<span class="c1"># 对应版本号</span></code></pre></figure>
+
+<p>由于 gem 在大陆使用是会被墙的，如果没有科学上网，可以选择镜像</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">gem</span> <span class="n">sources</span>
+<span class="c1">#查看源</span>
+<span class="n">gem</span> <span class="n">sources</span> <span class="o">-</span><span class="n">r</span> <span class="n">https</span><span class="ss">:/</span><span class="o">/</span><span class="n">rubygems</span><span class="p">.</span><span class="nf">org</span><span class="o">/</span>
+<span class="c1">#删除默认源</span>
+<span class="n">gem</span> <span class="n">sources</span> <span class="o">-</span><span class="n">a</span> <span class="n">https</span><span class="ss">:/</span><span class="o">/</span><span class="n">gems</span><span class="p">.</span><span class="nf">ruby</span><span class="o">-</span><span class="n">china</span><span class="p">.</span><span class="nf">com</span>
+<span class="c1">#更换为镜像源</span>
+<span class="n">gem</span> <span class="n">sources</span> <span class="o">-</span><span class="n">u</span>
+<span class="c1">#更新源的缓存</span></code></pre></figure>
+
+<p>如果显示正常，我们就完成了对应的环境安装，安装 <a href="http://Jekyllrb.com">Jekyll</a></p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">gem</span> <span class="n">install</span> <span class="n">jekyll</span></code></pre></figure>
+
+<p>接着我们去 <a href="http://jekyllthemes.org/">jekyllthemes</a> 选一个喜欢的主题</p>
+
+<p>并下载解压，通过 gem 安装 bundle</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">gem</span> <span class="n">install</span> <span class="n">bundle</span>
+<span class="c1">#安装 bundle</span>
+<span class="n">bundle</span> <span class="o">-</span><span class="n">v</span>
+<span class="c1">#对应版本号</span>
+<span class="n">bundle</span> <span class="n">install</span>
+<span class="c1">#安装依赖</span></code></pre></figure>
+
+<p>运行之前，打开 _config.yml 进行简单的配置，其中很重要的一点是 baseurl 需改成”/[repository]” 否则上传到线上之后会出现样式丢失！</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># Setup</span>
+<span class="ss">name:         </span><span class="no">Blog</span>
+<span class="ss">tagline:      </span><span class="no">A</span> <span class="n">responsive</span> <span class="n">theme</span> <span class="k">for</span> <span class="n">your</span> <span class="n">project</span> <span class="n">on</span> <span class="no">GitHub</span> <span class="no">Pages</span>
+<span class="ss">baseurl:      </span><span class="s2">"/Blog"</span>
+<span class="ss">locale:       </span><span class="s2">"en"</span>
+<span class="ss">email:        </span><span class="n">jimqing</span><span class="vi">@yeah</span><span class="p">.</span><span class="nf">net</span>
+
+<span class="c1"># Gems</span>
+<span class="ss">gems:
+  </span><span class="o">-</span> <span class="n">jekyll</span><span class="o">-</span><span class="n">paginate</span>
+
+<span class="c1"># Others</span>
+<span class="ss">markdown: </span><span class="n">kramdown</span>
+
+<span class="c1"># See change before re-build</span></code></pre></figure>
+
+<p>准备好了一切之后，运行！</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">serve</span> <span class="o">-</span><span class="n">w</span>
+<span class="c1">#运行!!</span>
+<span class="c1">#-w 表示实时检查改动，可以边书写博客一边查看效果</span></code></pre></figure>
+
+<p>运行成功，可在 http://127.0.0.1:4000/ 查看效果</p>
+
+<p>编写完成后，通过 jekyll 打包</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">jekyll</span> <span class="n">build</span>
+<span class="c1">#打包完成！</span></code></pre></figure>
+
+<p>打包后，会生成对应的文件在 _site下，将_site的内容复制到到你的 [repository] 目录下，push !</p>
+
+<p>完成后即可在 https://[用户名].github.io/[仓库名]]/ 下查看你的博客。</p>
+
+<p>Tips:</p>
+
+<p>在更换源之后如果依旧下载异常，检查下载主题目录下是否有 Gemfile 文件，更换其中的source 即可</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># A sample Gemfile</span>
+<span class="n">source</span> <span class="s2">"http://gems.ruby-china.com/"</span>
+<span class="n">gemspec</span>
+
+<span class="n">gem</span> <span class="s1">'jekyll'</span>
+<span class="n">gem</span> <span class="s1">'jekyll-paginate'</span>
+<span class="n">gem</span> <span class="s1">'kramdown'</span>
+<span class="n">gem</span> <span class="s1">'pygments.rb'</span></code></pre></figure>
+
+<p>在执行 install 的时候需要检查你的主题的文件 jekyll-[主题名]-theme.gemspec 对应的版本是否与你的安装版本相同，否则会 install 报错</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">spec</span><span class="p">.</span><span class="nf">add_development_dependency</span> <span class="s2">"jekyll"</span><span class="p">,</span> <span class="s2">"~&gt; 3.2"</span>
+<span class="n">spec</span><span class="p">.</span><span class="nf">add_development_dependency</span> <span class="s2">"bundler"</span><span class="p">,</span> <span class="s2">"2.0.1"</span>
+<span class="n">spec</span><span class="p">.</span><span class="nf">add_development_dependency</span> <span class="s2">"rake"</span><span class="p">,</span> <span class="s2">"~&gt; 10.0"</span></code></pre></figure>
+
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>

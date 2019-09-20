@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> Ubuntu安装mysql过程及Navicat链接 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>Ubuntu安装mysql过程及Navicat链接</h2>
+<p class="meta">21 Nov 2018</p>
+
+<p>阿里云服务器 Ubuntu 16.04 系统，搭建 Mysql 服务并使用 Navicat 远程链接成功。</p>
+
+<p>以下分享我链接的流程。</p>
+
+<p>首先，使用apt安装 Mysql</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">sudo apt-get install mysql-server
+#此处跳转出一个界面让你输入root的原始密码
+sudo apt install mysql-client
+
+sudo apt install libmysqlclient-dev</code></pre></figure>
+
+<p>第二步，测试是否成功安装</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">sudo netstat -tap | grep mysql
+#成功安装的话则显示
+#tcp        0      0 localhost:mysql         *:*                     LISTEN      13785/mysqld //此处13785为端口号</code></pre></figure>
+
+<p>第三步，安装完成后，可以使用以下命令</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">#启动
+sudo service mysql start
+#停止
+sudo service mysql stop
+#服务状态
+sudo service mysql status
+#重启
+sudo service mysql restart</code></pre></figure>
+
+<p>第四步，现在设置mysql允许远程访问，首先编辑文件/etc/mysql/mysql.conf.d/mysqld.cnf：</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+#注释掉bind-address = 127.0.0.1，此处绑定了本地127.0.0.1
+#接着保存退出，进入mysql</code></pre></figure>
+
+<p>第五步，执行远程登录授权 （使远程登陆的用户将使用该Mysql用户去操作数据库）</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">mysql -uroot -pxxxxx
+
+use mysql；
+
+#若是对root用户,将host设置为localhost表示只能本地连接mysql
+update user set host='localhost' where user='root';
+
+#刷新权限表
+flush privileges;
+
+#退回服务器外，重启服务器
+sudo service mysql restart；
+
+#若是对其他自定义用户
+#首先用root登陆mysql,创建新用户（e.g yuancheng 123456）
+grant select,insert,update,delete on *.* to yuancheng@localhost Identified by "123456";
+
+#创建成功后，执行授权
+grant all on *.* to 'yuancheng'@'%' identified by '123456';
+
+#刷新权限表
+flush privileges;
+
+#退回服务器外，重启服务器
+sudo service mysql restart；</code></pre></figure>
+
+<p>至此，服务器的部分完成了</p>
+
+<p>Navicat 的链接</p>
+
+<p>下载安装Navicat后，打开，点击新建链接，可以看到界面中有</p>
+
+<p>常规 高级 数据库 SSL SSH HTTP6个标签</p>
+
+<p>1.在常规中键入你所创建的MySql中的用户yuancheng及其密码</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">#如果MySql这里有误，报错为：
+#user出错：1045-Access denied for user 'yuanchen0'@'localhost'(using password: YES)
+#password出错：1045-Access denied for user 'yuancheng'@'localhost'(using password: YES)</code></pre></figure>
+
+<p>2.在SSH标签中使用SSH通道并键入阿里云服务器的登陆用户密码</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">#user出错：Password authentication failed
+#password出错：Password authentication failed</code></pre></figure>
+
+<p>注意：常规与 SSH 两个都要输入才能链接成功！！</p>
+
+<p>Tips： 如果出现以下报错</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">MySQL Error (2013): Lost connection to MySQL server at waiting for initial communication packet',systemerror:0</code></pre></figure>
+
+<p>于服务器中执行</p>
+
+<figure class="highlight"><pre><code class="language-code" data-lang="code">sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+#在[mysqld]加入一句:skip-name-resolve</code></pre></figure>
+
+<p>再次链接即可链接到远程 Mysql 服务器</p>
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>

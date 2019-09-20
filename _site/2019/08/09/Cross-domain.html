@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> 关于跨域问题详解 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>关于跨域问题详解</h2>
+<p class="meta">09 Aug 2019</p>
+
+<h3 id="前言">前言</h3>
+<p>跨域，是Web开发中经常遇到而且在面试中也经常考查的问题，而跨域是什么，跨域的原因又是什么，我们要如何去解决跨域问题？</p>
+
+<h3 id="什么是跨域">什么是跨域</h3>
+<p>跨域，其实是浏览器对JavaScript的一种限制，它限制不同域下的不同Js不能调用彼此。因为它判断此段请求，是不同域的，简而言之，一个域的网站去请求另一个域的资源，这段请求即是跨域的。而浏览器的判断规则，即同源策略。</p>
+
+<h3 id="什么是同源策略">什么是同源策略</h3>
+<p>同源策略即请求的地址域名，必须与当前页面的域名相同，包括协议和端口号。只要有其中一个不同，则浏览器会判断该请求跨域。同源策略是浏览器的行为，是为了保护本地数据不被JavaScript代码获取回来的数据污染，因此拦截的是客户端发出的请求回来的数据接收，即请求发送了，服务器响应了，但是无法被浏览器接收。</p>
+
+<p>同源策略限制了：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cookie、LocalStorage等存储型内容
+Dom节点
+Ajax请求（非同源）
+</code></pre></div></div>
+
+<p>注意： <link /> <img /> <script></script> 标签则是允许跨域加载资源的。</p>
+
+<h3 id="如何解决跨域问题跨域的方法">如何解决跨域问题，跨域的方法？</h3>
+
+<p>在现实的开发中，我们经常需要进行跨域请求，那么跨域的方法又有什么呢？</p>
+
+<p>以下列出三种跨域方式，可以适用于大部分的开发场景。</p>
+
+<ol>
+  <li>
+    <p>JSONP</p>
+
+    <p>JSONP是一种常见的且兼容性较好的前端跨域方式，在大部分浏览器上都可以实现跨域。唯一的缺点是它只支持Get请求，从而它的传输即是不安全的，容易遭受XSS攻击。</p>
+
+    <p>JSONP主要使用了允许跨域的<script></script>标签来进行跨域。它通过在<script></script>标签中src属性引入对应的接口链接从而实现跨域请求。</p>
+
+    <p>这里我借用掘金@浪里行舟 <a href="https://juejin.im/post/5c23993de51d457b8c1f4ee1">九种跨域方式实现原理</a>中的JSONP实现代码展示：</p>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// index.html</span>
+<span class="kd">function</span> <span class="nx">jsonp</span><span class="p">({</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">params</span><span class="p">,</span> <span class="nx">callback</span> <span class="p">})</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">script</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'script'</span><span class="p">)</span>
+    <span class="nb">window</span><span class="p">[</span><span class="nx">callback</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">resolve</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+      <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">removeChild</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span> <span class="p">...</span><span class="nx">params</span><span class="p">,</span> <span class="nx">callback</span> <span class="p">}</span> <span class="c1">// wd=b&amp;callback=show</span>
+    <span class="kd">let</span> <span class="nx">arrs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">arrs</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="nx">key</span><span class="p">}</span><span class="s2">=</span><span class="p">${</span><span class="nx">params</span><span class="p">[</span><span class="nx">key</span><span class="p">]}</span><span class="s2">`</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">script</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s2">`</span><span class="p">${</span><span class="nx">url</span><span class="p">}</span><span class="s2">?</span><span class="p">${</span><span class="nx">arrs</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">'&amp;'</span><span class="p">)}</span><span class="s2">`</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+<span class="nx">jsonp</span><span class="p">({</span>
+  <span class="na">url</span><span class="p">:</span> <span class="s1">'http://localhost:3000/say'</span><span class="p">,</span>
+  <span class="na">params</span><span class="p">:</span> <span class="p">{</span> <span class="na">wd</span><span class="p">:</span> <span class="s1">'Iloveyou'</span> <span class="p">},</span>
+  <span class="na">callback</span><span class="p">:</span> <span class="s1">'show'</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+<span class="p">})</span>
+   
+</code></pre></div>    </div>
+
+    <p>我们可以看到，传入的url：http://localhost:3000/say 会走到函数中的script标签的src属性中，从而调用document.body.appendChild(script) 去跨域请求。通过JSONP实现了跨域。</p>
+
+    <p>同样，如果你不想自己实现jsonp可以引用另一种方式，通过npm install Jsonp ，</p>
+
+    <p>在页面中引用，具体代码如下：</p>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">jsonp</span><span class="p">(</span><span class="s1">'http://localhost:3000/jsonp'</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>    </div>
+
+    <p>以及第三种方式，jQuery自带的jsonp方式，具体代码如下：</p>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+	<span class="na">url</span><span class="p">:</span> <span class="s2">"http://localhost:9090/student"</span><span class="p">,</span>
+    <span class="na">type</span><span class="p">:</span> <span class="s2">"GET"</span><span class="p">,</span> <span class="c1">//jsonp只支持get请求</span>
+    <span class="na">dataType</span><span class="p">:</span> <span class="s2">"jsonp"</span><span class="p">,</span> <span class="c1">//指定服务器返回的数据类型</span>
+    <span class="na">jsonp</span><span class="p">:</span> <span class="s2">"theFunction"</span><span class="p">,</span>   <span class="c1">//指定参数名称，默认callback</span>
+    <span class="na">jsonpCallback</span><span class="p">:</span> <span class="s2">"showData"</span><span class="p">,</span>  <span class="c1">//指定回调函数名称</span>
+    <span class="na">success</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span> <span class="c1">//json对象转成字符串</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s2">"#text"</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>CORS</p>
+
+    <p>CORS 指的是跨域资源共享，它需要双方的支持，基础是后端同学在服务端先支持跨域。那么具体是个怎样支持的过程呢？下面展示在Koa下服务端支持跨域的方式。</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> const router = require('koa-router')();
+ const send = require('koa-send');
+
+ router
+     .all('/*', async (ctx, next)=&gt; {
+         // 设置 Access-Control-Allow-Origin 支持跨域 * 标识支持全部ip跨域，此处也可以使用 ip 地址
+         ctx.set('Access-Control-Allow-Origin', '*');
+         ctx.set('Content-Type', 'application/json;charset=utf-8');
+         ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+         ctx.set('Access-Control-Allow-Headers', 'content-type');
+         ctx.set('Access-Control-Allow-Credentials', 'true');
+         // 遇到options请求返回200
+         if (ctx.request.method === 'OPTIONS') {
+             ctx.status = 200;
+         } else {
+             await next();
+         }
+     })
+     .get('/', (ctx, next) =&gt; {
+         ctx.body = {data: 'get request from /!'};
+     });
+</code></pre></div>    </div>
+    <p>通过设置 Access-Control-Allow-Origin 支持跨域，客户端可以不做任何处理，既可以实现跨域。开启后服务端接收到的请求将分为两种：简单请求与复杂请求</p>
+
+    <p>简单请求</p>
+
+    <p>简单请求的标志是请求方法限定为 head post get 方法之间的一种，头请求信息不超过以下几种字段:</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Accept
+ Accept-Language
+ Content-Language
+ Last-Event-ID
+ Content-Type：
+     application/x-www-form-urlencoded、 multipart/form-data、text/plain
+</code></pre></div>    </div>
+    <p>则这类请求称之为简单请求。</p>
+
+    <p>复杂请求</p>
+
+    <p>复杂请求的标识是，浏览器会代理你发出一个option请求进行校验，他们头请求信息最常见的就是content-type=applicaiton/json，传参的方式自然就是Json串，下面展示一次复杂请求：</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> $.ajax( 
+     {
+         url: 'http://127.0.0.1:3000/post',
+         type: 'post',
+         data: {
+             a: 1
+         },
+         dataType: 'json',
+         contentType: 'applicaiton/json',
+         success: function(res) {
+             console.log(res);
+         },
+         complete: function(xhr, ts) {
+             console.log('Status Code', xhr.status);
+         }
+     }
+ );
+</code></pre></div>    </div>
+    <p><img src="/Blog/images\2019-09-08-options.jpg" alt="" /></p>
+
+    <p>而OPTIONS请求一般会带三个关键请求头：</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Access-Control-Allow-Headers
+ Access-Control-Allow-Methods
+ Access-Control-Allow-Origin
+</code></pre></div>    </div>
+    <p>当校验成功的时候，就会发送真正的请求了。</p>
+
+    <p>通过CORS进行跨域是一个极好的解决方案，在服务端开启跨域之后，客户端可以不做任何处理，浏览器会自行进行处理，对于请求方是无感知的（options请求）。</p>
+
+    <p>Tips: 正常情况下，服务端开启跨域支持后，如果你的的浏览器依旧显示不能跨域，可尝试使用浏览器端的CORS插件再进行尝试。</p>
+  </li>
+  <li>
+    <p>WebSocket</p>
+
+    <p>WebSocket 是HTML5的一个基于TCP的持久化协议（HTTP也是基于TCP的），它实现了浏览器的全双工通信，它的具体工作流程是这样的，通过HTTP与服务端建立连接，建立连接之后，服务端与客户端之间既可以实现双向信息传输，客户端可以主动向服务端发送信息，服务端也可以主动跟客户端交互，而这之间的交互就是基于WebSocket的。以下举个koa中实现WebScoket的例子，附代码。</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> // 服务端代码
+ const Koa = require('koa');
+ const app = new Koa();
+
+ // 挂载中间件可以在这里挂载
+ // ...
+
+ // websocket 将已挂载中间件的 app 打入 server
+ const server = require('http').createServer(app.callback());
+ const io = require('socket.io')(server);
+
+ server.listen(3000, () =&gt; {
+     console.log(`app run at : http://127.0.0.1:3000`);
+ })
+
+ // websocket 开启监听
+ io.on('connection', socket =&gt; {
+     socket.on('send', data =&gt; {
+         console.log('客户端发送的内容：', data);
+         socket.emit('getMsg', '返回消息: 我接收到了' + data);
+     });
+     console.log('websocket初始化成功');
+     socket.emit('getMsg', 'websocket初始化成功...');
+ });
+</code></pre></div>    </div>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> // 客户端代码 通过http-server开启一个服务来打开页面
+ <span class="cp">&lt;!DOCTYPE html&gt;</span>
+ <span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;head&gt;</span>
+     <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"viewport"</span> <span class="na">content=</span><span class="s">"width=device-width, initial-scale=1.0"</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content=</span><span class="s">"ie=edge"</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"Cache-Control"</span> <span class="na">content=</span><span class="s">"no-cache"</span><span class="nt">&gt;</span>
+     <span class="c">&lt;!-- 此处的地址为服务端地址下的socket文件，我的服务器为127.0.0.1:3000 --&gt;</span>
+     <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://127.0.0.1:3000/socket.io/socket.io.js"</span> <span class="nt">&gt;&lt;/script&gt;</span>
+     <span class="nt">&lt;title&gt;</span>Document<span class="nt">&lt;/title&gt;</span>
+ <span class="nt">&lt;/head&gt;</span>
+ <span class="nt">&lt;body&gt;</span>
+     <span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">"send"</span> <span class="na">onclick=</span><span class="s">"emitFun()"</span><span class="nt">&gt;</span>发送到服务器<span class="nt">&lt;/button&gt;</span>
+ <span class="nt">&lt;/body&gt;</span>
+ <span class="nt">&lt;script&gt;</span>
+     <span class="kd">var</span> <span class="nx">socket</span> <span class="o">=</span> <span class="nx">io</span><span class="p">(</span><span class="s1">'ws://127.0.0.1:3000'</span><span class="p">);</span>
+     <span class="kd">var</span> <span class="nx">send</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">'#send'</span><span class="p">);</span>
+     <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">'#msg'</span><span class="p">);</span>
+
+     <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'getMsg'</span><span class="p">,</span> <span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'服务端消息：'</span><span class="p">,</span>  <span class="nx">data</span><span class="p">);</span>
+     <span class="p">})</span>
+
+     <span class="kd">function</span> <span class="nx">emitFun</span><span class="p">()</span> <span class="p">{</span>
+         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'点击了发送消息！'</span><span class="p">);</span>
+     <span class="c1">// 通过emit触发发送请求</span>
+     <span class="nx">socket</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">'send'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">);</span>
+     <span class="p">}</span>
+ <span class="nt">&lt;/script&gt;</span>
+ <span class="nt">&lt;/html&gt;</span>
+</code></pre></div>    </div>
+    <p>效果： 
+  <img src="/Blog/images\2019-09-08-ws.jpg" alt="" /></p>
+
+    <p>跨域的方式有很多种，以上只展示常见的三种，也是我自己比较熟悉的三种跨域方式，跨域在我们的前后端分离的大环境下，已经变成家常便饭一样的存在，不能好好处理跨域问题的程序员不是一个好程序员。</p>
+  </li>
+</ol>
+
+<h3 id="参考文献博客">参考文献/博客</h3>
+<ol>
+  <li>跨域的几种方式 <a href="http://www.imooc.com/article/40074">http://www.imooc.com/article/40074</a></li>
+  <li>九种跨域方式实现原理 <a href="https://juejin.im/post/5c23993de51d457b8c1f4ee1">https://juejin.im/post/5c23993de51d457b8c1f4ee1</a></li>
+  <li>socket.io 官网 <a href="https://socket.io/">https://socket.io/</a></li>
+</ol>
+
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>
