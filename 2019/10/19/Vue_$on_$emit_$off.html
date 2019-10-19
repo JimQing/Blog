@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> Vue $on $emit $off </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>Vue $on $emit $off</h2>
+<p class="meta">19 Oct 2019</p>
+
+<h3 id="vue-事件绑定-on-emit-off">Vue 事件绑定 $on $emit $off</h3>
+
+<p>文章简概</p>
+
+<p>​	通过$on $emit $off 做事件中心，以及其手动实现。</p>
+
+<p>常见的事件绑定例如$emit，在Vue的使用过程中，我们经常在子组件中通过$emit去调用父组件（容器）中的事件。</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>父组件
+<span class="nt">&lt;div&gt;</span>
+    <span class="nt">&lt;child</span> <span class="err">@</span><span class="na">doSomething=</span><span class="s">"fatherMethod"</span><span class="nt">/&gt;</span>  
+<span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;script&gt;</span>
+<span class="p">...</span>
+<span class="nx">method</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nx">fatherMethod</span><span class="p">()</span> <span class="p">{}</span>
+<span class="p">}</span>
+<span class="p">...</span>
+<span class="nt">&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>子组件
+this.$emit('doSomething');
+</code></pre></div></div>
+
+<p>这是一种常见的简单应用，但是面对更多更复杂的场景，并不是显得那么好用，例如父组件下有AB两个子组件，而A组件想要触发B中的事件，则会有一些麻烦。</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>父组件
+<span class="nt">&lt;div&gt;</span>
+    <span class="nt">&lt;child</span> <span class="err">@</span><span class="na">doSomething=</span><span class="s">"changeChild2Data"</span><span class="nt">/&gt;</span>  		
+  	<span class="nt">&lt;child2</span> <span class="na">:someData=</span><span class="s">"someData"</span><span class="nt">/&gt;</span>  
+<span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;script&gt;</span>
+<span class="p">...</span>
+<span class="nx">method</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nx">changeChild2Data</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// someData Change</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">...</span>
+<span class="nt">&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>子组件child2
+...
+watch: {
+    someData(newVal) {
+        // if value change
+        this.doSomethingNew();
+    }
+}
+...
+</code></pre></div></div>
+
+<p>可见，按照正常的流程会通过父组件做个中转，这样的操作徒增麻烦，同时在代码可读性及维护上带来了很多问题。但是通过Vue的 $on $emit $off 我们可以做一个事件中心（eventHub），对于这些事件做一个统一管理。</p>
+
+<p>$on 可以将一个事件绑定。</p>
+
+<p>$emit 触发绑定的事件</p>
+
+<p>$off 对一个已绑定的事件解绑</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vue.prototype.eventHub = new Vue();
+new Vue().$mount('#app')
+</code></pre></div></div>
+
+<p>在入口文件中我们将一个Vue插入到原型中的eventHub中，方便使用。</p>
+
+<p>回到上面的场景，在子组件1中绑定事件，通过eventId标识</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>组件 Child
+...
+mounted() {
+    this.eventHub.$on('eventId', this.doSomethingNew)
+}
+...
+</code></pre></div></div>
+
+<p>在子组件2中触发事件，调用this.doSomethingNew()方法；</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>组件 Child2
+...
+method: {
+    dosomething() {
+        this.$eventHub.$emit('eventId');
+    }
+}
+...
+</code></pre></div></div>
+
+<p>通过$off 解绑对应的方法。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+method: {
+    dosomething() {
+        this.$eventHub.$off('eventId');
+    }
+}
+...
+</code></pre></div></div>
+
+<p>通过上诉效果，简化了兄弟组件之间方法的调用过程。这就是事件中心的原理，通过一个事件中转站，对不同位置的事件进行一个统一的管理。从而提高了代码的可读性，简化了流程。</p>
+
+<h5 id="手动实现on">手动实现$on</h5>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">eventList</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kd">const</span> <span class="nx">$on</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">eventId</span><span class="p">,</span> <span class="nx">myfun</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">])</span> <span class="p">{</span>
+        <span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">]</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="p">}</span>
+    <span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">].</span><span class="nx">push</span><span class="p">(</span><span class="nx">myfun</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="手动实现emit">手动实现$emit</h5>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">$emit</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">eventId</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">])</span> <span class="p">{</span>
+        <span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">].</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">handle</span> <span class="o">=&gt;</span> <span class="nx">handle</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="手动实现off">手动实现$off</h5>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">$off</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">eventId</span><span class="p">,</span> <span class="nx">handle</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">index</span> <span class="o">=</span> <span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">].</span><span class="nx">findIndex</span><span class="p">(</span><span class="nx">fun</span><span class="o">=&gt;</span> <span class="nx">fun</span><span class="o">===</span><span class="nx">handle</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">idnex</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">eventList</span><span class="p">[</span><span class="nx">eventId</span><span class="p">].</span><span class="nx">splice</span><span class="p">(</span><span class="nx">idnex</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="完整的eventhub手动实现">完整的eventHub手动实现</h5>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">createEventHub</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">({</span>
+    <span class="na">hub</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">),</span>
+    <span class="nx">emit</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">]</span> <span class="o">||</span> <span class="p">[]).</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">handler</span> <span class="o">=&gt;</span> <span class="nx">handler</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+    <span class="p">},</span>
+    <span class="nx">on</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">handler</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">])</span> <span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">]</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">].</span><span class="nx">push</span><span class="p">(</span><span class="nx">handler</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="nx">off</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">handler</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">i</span> <span class="o">=</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">]</span> <span class="o">||</span> <span class="p">[]).</span><span class="nx">findIndex</span><span class="p">(</span><span class="nx">h</span> <span class="o">=&gt;</span> <span class="nx">h</span> <span class="o">===</span> <span class="nx">handler</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">i</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">hub</span><span class="p">[</span><span class="nx">event</span><span class="p">].</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h4 id="参考文章">参考文章：</h4>
+
+<p><a href="https://www.html.cn/30-seconds-of-code/#createeventhub">https://www.html.cn/30-seconds-of-code/#createeventhub</a> （30 秒就能理解的 JavaScript 代码片段）</p>
+
+<p><a href="https://vuejs.org/">https://vuejs.org</a>  (Vue官方文档)</p>
+
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>
