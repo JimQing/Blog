@@ -1,2 +1,0 @@
-Jekyll 静态博客实现搜索功能
-https://www.jianshu.com/p/064e2422f7c7
