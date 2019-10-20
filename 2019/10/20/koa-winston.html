@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="/Blog/stylesheets/ext.css" media="screen" />
+    <link rel="shortcut icon" href="/Blog/favicon.ico" type="image/x-icon"/>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title> winston 构建koa日志收集 </title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1> JimQing's Blog </h1>
+        <br/>
+        <a href="https://github.com/JimQing" class="button"><small>View JimQing's project</small>on GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          
+          <h2>winston 构建koa日志收集</h2>
+<p class="meta">20 Oct 2019</p>
+
+<h3 id="文章简概">文章简概</h3>
+
+<p>​	学习和熟悉winston.js，并通过集成为中间件，在Koa中构建为日志上报模块。</p>
+
+<h4 id="winston">winston</h4>
+
+<p>winston是一个 logger js，主要用于打印日志，它提供了丰富的API，足以满足我们的需求。通过对官方文档的一些研究，总结了一下具体的使用指南，并尝试集成为中间件用于Koa.js框架中进行使用。</p>
+
+<h4 id="installation">Installation</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm install winston
+</code></pre></div></div>
+
+<h4 id="usage">Usage</h4>
+
+<p>winston可以通过createLogger简单的实现一个日志API。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">createLogger</span><span class="p">({</span>
+<span class="err">​</span>    <span class="na">level</span><span class="p">:</span> <span class="s1">'info'</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">format</span><span class="p">:</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">format</span><span class="p">.</span><span class="nx">json</span><span class="p">(),</span>
+<span class="err">​</span>    <span class="na">defaultMeta</span><span class="p">:</span> <span class="p">{</span><span class="na">service</span><span class="p">:</span> <span class="s1">'user-service'</span><span class="p">},</span>
+<span class="err">​</span>    <span class="na">transports</span><span class="p">:</span> <span class="p">[</span>
+<span class="err">​</span>    <span class="c1">//</span>
+<span class="err">​</span>    <span class="c1">// - Write to all logs with level `info` and below to `combined.log`</span>
+<span class="err">​</span>    <span class="c1">// - Write all logs error (and below) to `error.log`.</span>
+<span class="err">​</span>    <span class="c1">//</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span> <span class="na">filename</span><span class="p">:</span> <span class="s1">'error.log'</span><span class="p">,</span> <span class="na">level</span><span class="p">:</span> <span class="s1">'error'</span> <span class="p">}),</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span> <span class="na">filename</span><span class="p">:</span> <span class="s1">'combined.log'</span> <span class="p">})</span>
+<span class="err">​</span>    <span class="p">]</span>
+<span class="p">});</span>
+<span class="c1">//</span>
+<span class="c1">// If we're not in production then log to the `console` with the format:</span>
+<span class="c1">// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `</span>
+<span class="c1">//</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">!==</span> <span class="s1">'production'</span><span class="p">)</span> <span class="p">{</span>
+<span class="err">​</span>    <span class="nx">logger</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">Console</span><span class="p">({</span>
+<span class="err">​</span>        <span class="na">format</span><span class="p">:</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">format</span><span class="p">.</span><span class="nx">simple</span><span class="p">()</span>
+<span class="err">​</span>    <span class="p">}));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>您也可以直接通过require(‘winston’)生成logger(如上述代码)进行日志记录，通过判断运行环境，在非生产mode下使用不同的格式。</p>
+
+<h4 id="logging">Logging</h4>
+
+<p>winston有不同的类型的日志，分为error，warn，info，verbose，debug，silly，通过一下方法赋予这些类型各自的权重。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">levels</span> <span class="o">=</span> <span class="p">{</span>
+<span class="err">​</span>    <span class="na">error</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">warn</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">info</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">verbose</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">debug</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">silly</span><span class="p">:</span> <span class="mi">5</span>
+<span class="p">};</span>
+</code></pre></div></div>
+<p><em>levels</em> 用于对当前的日志进行排序，可以的以上5种类型，<em>levels</em> 越低则越严重。</p>
+
+<h4 id="creating-your-own-logger">Creating your own Logger</h4>
+
+<p>可以通过  winston.createLogger 创建一个logger，如以下例子：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">createLogger</span><span class="p">({</span>
+<span class="err">​</span>    <span class="na">transports</span><span class="p">:</span> <span class="p">[</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">Console</span><span class="p">(),</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span> <span class="na">filename</span><span class="p">:</span> <span class="s1">'combined.log'</span> <span class="p">})</span>
+<span class="err">​</span>    <span class="p">]</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<p>一个logger支持传入以下类型的参数：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>level</td>
+      <td>‘info’</td>
+      <td>Log only if <a href="https://github.com/winstonjs/winston#streams-objectmode-and-info-objects">info.level</a> less than or equal to this level</td>
+    </tr>
+    <tr>
+      <td>levels</td>
+      <td>winston.config.npm.levels</td>
+      <td>Levels (and colors) representing log priorities</td>
+    </tr>
+    <tr>
+      <td>format</td>
+      <td>winston.format.json</td>
+      <td>Formatting for info messages (see: <a href="https://github.com/winstonjs/winston#formats">Formats</a>)</td>
+    </tr>
+    <tr>
+      <td>transports</td>
+      <td>[] <em>(No transports)</em></td>
+      <td>Set of logging targets for info messages</td>
+    </tr>
+    <tr>
+      <td>exitOnError</td>
+      <td>true</td>
+      <td>If false, handled exceptions will not cause process.exit</td>
+    </tr>
+    <tr>
+      <td>silent</td>
+      <td>false</td>
+      <td>If true, all logs are suppressed</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//// Logging//</span>
+<span class="c1">// 打印的两种方式，当然第二种更加简洁</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span>
+<span class="err">​</span>    <span class="na">level</span><span class="p">:</span> <span class="s1">'info'</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">message</span><span class="p">:</span> <span class="s1">'Hello distributed log files!'</span>
+<span class="p">});</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="s1">'Hello again distributed logs'</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在一个logger中你可以通过add or remove 去添加或者删除 transports:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">files</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span> <span class="na">filename</span><span class="p">:</span> <span class="s1">'combined.log'</span> <span class="p">});</span>
+<span class="kd">const</span> <span class="nx">console</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">Console</span><span class="p">();</span>
+<span class="nx">logger</span>
+<span class="p">.</span><span class="nx">clear</span><span class="p">()</span> <span class="c1">// Remove all transports</span>
+<span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">console</span><span class="p">)</span> <span class="c1">// Add console transport</span>
+<span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">files</span><span class="p">)</span> <span class="c1">// Add file transport</span>
+<span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="nx">console</span><span class="p">);</span> <span class="c1">// Remove console transport</span>
+</code></pre></div></div>
+
+<p>通过如下方式可重新配置 logger , 包括日志等等</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">createLogger</span><span class="p">({</span>
+<span class="err">​</span>    <span class="na">level</span><span class="p">:</span> <span class="s1">'info'</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">transports</span><span class="p">:</span> <span class="p">[</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">Console</span><span class="p">(),</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">winston</span><span class="p">.</span><span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span> <span class="na">filename</span><span class="p">:</span> <span class="s1">'combined.log'</span> <span class="p">})</span>
+<span class="err">​</span>    <span class="p">]</span>
+<span class="p">});</span>
+
+<span class="c1">//// Replaces the previous transports with those in the// new configuration wholesale.//</span>
+<span class="kd">const</span> <span class="nx">DailyRotateFile</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'winston-daily-rotate-file'</span><span class="p">);</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">configure</span><span class="p">({</span>
+<span class="err">​</span>    <span class="na">level</span><span class="p">:</span> <span class="s1">'verbose'</span><span class="p">,</span>
+<span class="err">​</span>    <span class="na">transports</span><span class="p">:</span> <span class="p">[</span>
+<span class="err">​</span>        <span class="k">new</span> <span class="nx">DailyRotateFile</span><span class="p">(</span><span class="nx">opts</span><span class="p">)</span>
+<span class="err">​</span>    <span class="p">]</span>
+<span class="p">});</span>
+
+</code></pre></div></div>
+
+<h4 id="string-interpolation">String interpolation</h4>
+
+<p>log 支持以下方式输出日志，当然可以简化为 logger.info 而简化掉 第一个参数 ‘info’</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message %s'</span><span class="p">,</span> <span class="s1">'my string'</span><span class="p">);</span>
+<span class="c1">// info: test message my string</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message %d'</span><span class="p">,</span> <span class="mi">123</span><span class="p">);</span>
+<span class="c1">// info: test message 123</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message %j'</span><span class="p">,</span> <span class="p">{</span><span class="na">number</span><span class="p">:</span> <span class="mi">123</span><span class="p">},</span> <span class="p">{});</span>
+<span class="c1">// info: test message {"number":123}// meta = {}</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message %s, %s'</span><span class="p">,</span> <span class="s1">'first'</span><span class="p">,</span> <span class="s1">'second'</span><span class="p">,</span> <span class="p">{</span><span class="na">number</span><span class="p">:</span> <span class="mi">123</span><span class="p">});</span>
+<span class="c1">// info: test message first, second// meta = {number: 123}</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message'</span><span class="p">,</span> <span class="s1">'first'</span><span class="p">,</span> <span class="s1">'second'</span><span class="p">,</span> <span class="p">{</span><span class="na">number</span><span class="p">:</span> <span class="mi">123</span><span class="p">});</span>
+<span class="c1">// info: test message first second// meta = {number: 123}</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message %s, %s'</span><span class="p">,</span> <span class="s1">'first'</span><span class="p">,</span> <span class="s1">'second'</span><span class="p">,</span> <span class="p">{</span><span class="na">number</span><span class="p">:</span> <span class="mi">123</span><span class="p">},</span> <span class="kd">function</span><span class="p">(){});</span>
+<span class="c1">// info: test message first, second// meta = {number: 123}// callback = function(){}</span>
+<span class="nx">logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="s1">'test message'</span><span class="p">,</span> <span class="s1">'first'</span><span class="p">,</span> <span class="s1">'second'</span><span class="p">,</span> <span class="p">{</span><span class="na">number</span><span class="p">:</span> <span class="mi">123</span><span class="p">},</span> <span class="kd">function</span><span class="p">(){});</span>
+<span class="c1">// info: test message first second// meta = {number: 123}// callback = function(){}</span>
+</code></pre></div></div>
+
+<h4 id="demo举例">demo举例</h4>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// logger.js</span>
+<span class="kd">const</span> <span class="p">{</span>
+    <span class="nx">createLogger</span><span class="p">,</span>
+    <span class="nx">format</span><span class="p">,</span>
+    <span class="nx">transports</span>
+<span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'winston'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="p">{</span>
+    <span class="nx">combine</span><span class="p">,</span>
+    <span class="nx">timestamp</span><span class="p">,</span>
+    <span class="nx">label</span><span class="p">,</span>
+    <span class="nx">printf</span>
+<span class="p">}</span> <span class="o">=</span> <span class="nx">format</span><span class="p">;</span>
+<span class="c1">// 对logger进行基础配置</span>
+<span class="kd">const</span> <span class="nx">loggerConfig</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">levels</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">error</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="na">warn</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="na">info</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="na">verbose</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="na">debug</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="na">silly</span><span class="p">:</span> <span class="mi">5</span>
+    <span class="p">},</span>
+    <span class="err">​</span><span class="na">color</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">error</span><span class="p">:</span> <span class="s1">'red'</span><span class="p">,</span>
+        <span class="na">debug</span><span class="p">:</span> <span class="s1">'blue'</span><span class="p">,</span>
+        <span class="na">warn</span><span class="p">:</span> <span class="s1">'yellow'</span><span class="p">,</span>
+        <span class="na">data</span><span class="p">:</span> <span class="s1">'grey'</span><span class="p">,</span>
+        <span class="na">log</span><span class="p">:</span> <span class="s1">'green'</span><span class="p">,</span>
+        <span class="na">verbose</span><span class="p">:</span> <span class="s1">'cyan'</span><span class="p">,</span>
+        <span class="na">silly</span><span class="p">:</span> <span class="s1">'magenta'</span>
+    <span class="p">},</span>
+    <span class="err">​</span> <span class="c1">// 自定义输出的格式</span>
+    <span class="err">​</span> <span class="c1">// 参数 info 指的是在 createLogger 函数的 变量中的 format 变量下的 combine所包含的变量</span>
+    <span class="err">​</span> <span class="c1">// 如: info.label 事实上拿到的是下方的 labelName</span>
+    <span class="err">​</span><span class="na">logFormat</span><span class="p">:</span> <span class="nx">printf</span><span class="p">(</span><span class="nx">info</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">`[</span><span class="p">${</span><span class="nx">info</span><span class="p">.</span><span class="nx">date</span><span class="p">}</span><span class="s2">] [</span><span class="p">${</span><span class="nx">info</span><span class="p">.</span><span class="nx">label</span><span class="p">}</span><span class="s2">] [</span><span class="p">${</span><span class="nx">info</span><span class="p">.</span><span class="nx">level</span><span class="p">}</span><span class="s2">] - </span><span class="p">${</span><span class="nx">info</span><span class="p">.</span><span class="nx">message</span><span class="p">}</span><span class="s2">`</span><span class="p">;</span>
+    <span class="p">}),</span>
+    <span class="err">​</span> <span class="c1">// 日志文件绝对路径</span>
+    <span class="err">​</span><span class="na">logFileName</span><span class="p">:</span> <span class="nx">logdir</span> <span class="o">+</span> <span class="s1">'/'</span> <span class="o">+</span> <span class="nx">date</span> <span class="o">+</span> <span class="s1">'.log'</span>
+<span class="p">};</span>
+<span class="kd">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">labelName</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">_labelName</span> <span class="o">=</span> <span class="nx">labelName</span> <span class="o">&amp;&amp;</span> <span class="sr">/^</span><span class="se">[\S]</span><span class="sr">+$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">labelName</span><span class="p">)</span> <span class="p">?</span> <span class="nx">labelName</span> <span class="p">:</span> <span class="s1">'默认'</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">createLogger</span><span class="p">({</span>
+        <span class="na">levels</span><span class="p">:</span> <span class="nx">loggerConfig</span><span class="p">.</span><span class="nx">levels</span><span class="p">,</span>
+        <span class="na">format</span><span class="p">:</span> <span class="nx">combine</span><span class="p">(</span>
+            <span class="err">​</span><span class="nx">label</span><span class="p">({</span>
+                <span class="na">label</span><span class="p">:</span> <span class="nx">_labelName</span>
+            <span class="p">}),</span>
+            <span class="err">​</span> <span class="c1">// 时间戳</span>
+            <span class="err">​</span><span class="nx">timestamp</span><span class="p">(),</span>
+            <span class="err">​</span> <span class="c1">// 设置颜色</span>
+            <span class="err">​</span><span class="nx">format</span><span class="p">.</span><span class="nx">colorize</span><span class="p">({</span>
+                <span class="na">all</span><span class="p">:</span> <span class="kc">true</span>
+            <span class="p">}),</span>
+            <span class="err">​</span> <span class="c1">// 开启插值功能 </span>
+            <span class="err">​</span><span class="nx">format</span><span class="p">.</span><span class="nx">splat</span><span class="p">(),</span>
+            <span class="err">​</span> <span class="c1">// 输出格式的配置</span>
+            <span class="err">​</span><span class="nx">loggerConfig</span><span class="p">.</span><span class="nx">logFormat</span>
+        <span class="err">​</span><span class="p">),</span> 
+        <span class="c1">// 日志的相关配置</span>
+        <span class="na">transports</span><span class="p">:</span> <span class="p">[</span>
+            <span class="err">​</span> <span class="c1">// 控制台输出日志</span>
+            <span class="err">​</span><span class="k">new</span> <span class="nx">transports</span><span class="p">.</span><span class="nx">Console</span><span class="p">(),</span>
+            <span class="err">​</span> <span class="c1">// 绑定日志文件</span>
+            <span class="err">​</span><span class="k">new</span> <span class="nx">transports</span><span class="p">.</span><span class="nx">File</span><span class="p">({</span>
+                <span class="na">level</span><span class="p">:</span> <span class="s1">'error'</span><span class="p">,</span>
+                <span class="err">​</span><span class="na">filename</span><span class="p">:</span> <span class="nx">loggerConfig</span><span class="p">.</span><span class="nx">logFileName</span><span class="p">,</span>
+                <span class="err">​</span><span class="na">colorize</span><span class="p">:</span> <span class="kc">false</span>
+            <span class="p">})</span>
+        <span class="p">]</span>
+    <span class="p">});</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">;</span> <span class="c1">// 暴露logger对象</span>
+</code></pre></div></div>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// app.js</span>
+<span class="c1">// 如何使用</span>
+<span class="kd">const</span> <span class="nx">logger</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./logger'</span><span class="p">)(</span><span class="s1">'错误收集'</span><span class="p">);</span>
+
+<span class="nx">logger</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">'错误: %s'</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
+</code></pre></div></div>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//   扩展，制作为Koa中间件，配合使用app.use, 需异步！</span>
+<span class="c1">//   利用try-catch 抓错误，并使用 logger 处理</span>
+<span class="c1">//   由于Koa的洋葱模型，在走完 ' start ' 之后，next走向下个中间件，在下方的报错会向上回溯</span>
+<span class="c1">//   从而被try-catch 抓到，如果说放置在业务代码之后，事实上是抓不到错误的</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="err">​</span> <span class="c1">// 中间件部分，务必写在页面业务代码之前</span>
+    <span class="err">​</span><span class="k">async</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'start'</span><span class="p">);</span>
+            <span class="kr">await</span> <span class="nx">next</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">logger</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">'错误: %s'</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">);</span>
+
+<span class="c1">//   Koa中的请求会依次走过被 app.use 的中间件，此处可以对相应的请求进行上报日志</span>
+<span class="c1">//   获取行为 如 duration '请求耗时' 等等数据</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="err">​</span><span class="k">async</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">start</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
+        <span class="kr">await</span> <span class="nx">next</span><span class="p">();</span>
+        <span class="kd">const</span> <span class="nx">duration</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">start</span><span class="p">;</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="s1">'[%s] %s %s (%s ms)'</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">method</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">url</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">duration</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<h4 id="参考文章">参考文章</h4>
+
+<p>Winston Github <a href="https://github.com/winstonjs/winston">https://github.com/winstonjs/winston</a></p>
+
+<p>Winston docs 文档地址： <a href="https://github.com/winstonjs/winston/tree/2.x">https://github.com/winstonjs/winston/tree/2.x</a></p>
+
+
+<p class="meta">至此，希望此博客能对你有所帮助。</p>
+
+        </section>
+
+        <aside id="sidebar">
+            <img style="width: 100%;height: auto;margin-bottom: 50px;" src="/Blog/images/octojekyll.png" alt="" srcset="">
+            
+            <p class="repo-owner">寄意寒星荃不察，我以我血荐轩辕.</p>          
+            
+            <p class="repo-owner">博主邮箱：<span style="color: #337dd0">jimqing@yeah.net</span></p>
+            
+            <p class="repo-owner">本博客用于记录个人学习生活日常，通常记录一些笔记等，侵删.</p>
+            
+            <p class="repo-owner">转载和引用请指明原作者和链接.</p>
+            
+            <p class="repo-owner">本博客主题为 <a href="https://github.com/pietromenna/jekyll-architect-theme">jekyll-architect-theme</a>.</p>
+
+        </aside>
+      </div>
+    </div>
+
+  </body>
+</html>
